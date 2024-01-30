@@ -1,5 +1,5 @@
 # base image
-FROM node:16.15.1-slim
+FROM node:18.18.2-alpine3.17
 
 # Create and change to the app directory.
 WORKDIR /usr/app
@@ -11,7 +11,7 @@ COPY . .
 
 # Install production dependencies.
 # If you add a package-lock.json, speed your build by switching to 'npm ci'.
-RUN npm ci --only=production
+RUN npm install
 
 RUN npm run build
 
