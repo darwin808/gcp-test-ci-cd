@@ -1,10 +1,8 @@
 name: Deployment
 
 on:
-  pull_request:
-    branches: [main]
   push:
-    branches: [main]
+    branches: [main, dev, stage]
   workflow_dispatch:
 
 concurrency:
@@ -18,9 +16,25 @@ env:
   REPO_NAME: nextjs-cloud-run-test-app
 
 jobs:
+  setup-env:
+    runs-on: ubuntu-latest
+    outputs:
+      env-name: ${{ steps.env-name.outputs.env }}
+
+    steps:
+      - name: Setup Environment Name
+        id: env-name
+        run: |
+          echo "::set-output name=env::${{ fromJSON('{"main":"prod","dev":"dev","master":"prod","stage":"stage"}')[github.ref_name] }}"
+
   build-and-deploy:
+    needs: setup-env
     name: Setup, Build, and Deploy
     runs-on: ubuntu-latest
+    env:
+      ENV: "${{ needs.setup-env.outputs.env-name }}"
+      PROJECT_ID: "zesty-${{ needs.setup-env.outputs.env-name }}"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,25 +45,29 @@ jobs:
         with:
           credentials_json: "${{ secrets.CLOUD_RUN_SERVICE_ACCOUNT }}"
 
-      # Setup gcloud CLI/SDK
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+      - name: View current PROJECT_ID
+        run: |
+          echo $ENV | sed 's/./& /g'
 
-      - name: Authorize Docker push
-        run: gcloud auth configure-docker
+      # # Setup gcloud CLI/SDK
+      # - name: Set up Cloud SDK
+      #   uses: google-github-actions/setup-gcloud@v2
+      #
+      # - name: Authorize Docker push
+      #   run: gcloud auth configure-docker
 
-      - name: Build and tag the docker image
-        run: |-
-          docker build . --tag gcr.io/$PROJECT_ID/$REPO_NAME:$GITHUB_SHA
-
-      - name: Push the image to the Google Container Registry (GCR)
-        run: |-
-          docker push gcr.io/$PROJECT_ID/$REPO_NAME:$GITHUB_SHA
-
-      - name: Deploy
-        run: |-
-          gcloud run deploy $REPO_NAME \
-          --region $REGION \
-          --image gcr.io/$PROJECT_ID/$REPO_NAME:$GITHUB_SHA \
-          --platform "managed" \
-          --quiet
+      # - name: Build and tag the docker image
+      #   run: |-
+      #     docker build . --tag gcr.io/$PROJECT_ID/$REPO_NAME:$GITHUB_SHA
+      #
+      # - name: Push the image to the Google Container Registry (GCR)
+      #   run: |-
+      #     docker push gcr.io/$PROJECT_ID/$REPO_NAME:$GITHUB_SHA
+      #
+      # - name: Deploy
+      #   run: |-
+      #     gcloud run deploy $REPO_NAME \
+      #     --region $REGION \
+      #     --image gcr.io/$PROJECT_ID/$REPO_NAME:$GITHUB_SHA \
+      #     --platform "managed" \
+      #     --quiet
