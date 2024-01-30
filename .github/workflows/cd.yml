@@ -1,14 +1,20 @@
-name: nextjs-cloud-run
+name: Deployment
 
 on:
+  pull_request:
+    branches: [main]
   push:
-    branches:
-      - main
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   PROJECT_ID: ${{ secrets.CLOUD_RUN_PROJECT_NAME }}
   REGION: us-east1
-  # project-name but it can be anything you want
+  # TODO: project-name please CHANGE this to your desired project-name in GCP
   REPO_NAME: nextjs-cloud-run-test-app
 
 jobs:
@@ -17,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Authenticate with Google Cloud
       - id: "auth"
