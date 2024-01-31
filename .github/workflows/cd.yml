@@ -7,6 +7,8 @@
 # - main or master
 # - dev
 # - stage
+
+# Note: Make sure to include a Dockerfile in your repository for building the Docker image.
 name: Deployment to Cloud Run
 
 on:
