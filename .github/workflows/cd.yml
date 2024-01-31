@@ -1,4 +1,13 @@
-name: Deployment
+# Ensure the following repository secrets are set in GitHub:
+# - CLOUD_RUN_SERVICE_ACCOUNT_DEV
+# - CLOUD_RUN_SERVICE_ACCOUNT_STAGE
+# - CLOUD_RUN_SERVICE_ACCOUNT_PROD
+
+# This workflow requires the following branches to work properly:
+# - main or master
+# - dev
+# - stage
+name: Deployment to Cloud Run
 
 on:
   push:
@@ -10,9 +19,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PROJECT_ID: ${{ secrets.CLOUD_RUN_PROJECT_NAME }}
   REGION: us-east1
-  # TODO: project-name please CHANGE this to your desired project-name in GCP
+  # TODO: project-name CHANGE this to your desired project-name in GCP
   REPO_NAME: nextjs-cloud-run-test-app
 
 jobs:
@@ -45,10 +53,6 @@ jobs:
         with:
           credentials_json: "${{ secrets[format('CLOUD_RUN_SERVICE_ACCOUNT_{0}', env.ENV)] }}"
 
-      # - name: View current PROJECT_ID
-      #   run: |
-      #     echo ${{ secrets[format('CLOUD_RUN_SERVICE_ACCOUNT_{0}', env.ENV)] }} | sed 's/./& /g'
-
       # Setup gcloud CLI/SDK
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -64,7 +68,7 @@ jobs:
         run: |-
           docker push gcr.io/$PROJECT_ID/$REPO_NAME:$GITHUB_SHA
 
-      - name: Deploy
+      - name: Deploy to Cloud Run
         run: |-
           gcloud run deploy $REPO_NAME \
           --region $REGION \
