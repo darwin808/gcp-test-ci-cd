@@ -77,4 +77,4 @@ jobs:
           --image gcr.io/$PROJECT_ID/$REPO_NAME:$GITHUB_SHA \
           --platform "managed" \
           --quiet \
-          --set-labels KEY1=VALUE1,KEY2=V5
+          --labels KEY1=VALUE1,KEY2=V5
