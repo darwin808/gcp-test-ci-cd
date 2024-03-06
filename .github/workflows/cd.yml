@@ -77,4 +77,5 @@ jobs:
           --image gcr.io/$PROJECT_ID/$REPO_NAME:$GITHUB_SHA \
           --platform "managed" \
           --quiet \
-          --labels=environment=production,team=dev
+          --labels=environment=production,team=dev \
+          --tags=tag1,tag2
