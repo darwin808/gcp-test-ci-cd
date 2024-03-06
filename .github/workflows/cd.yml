@@ -78,4 +78,4 @@ jobs:
           --platform "managed" \
           --quiet \
           --labels=environment=production,team=dev \
-          --tags=tag1,tag2
+          --tag=tag1
